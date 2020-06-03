@@ -661,7 +661,7 @@ void GUI_RefreshPage()
 		{
 		      case MAIN_UI:          
 				
-					lv_draw_ready_print();
+				lv_draw_ready_print();
 				
 				break;
 			case EXTRUSION_UI:  
@@ -681,7 +681,14 @@ void GUI_RefreshPage()
 
 			case PRINT_READY_UI:
 			
-				/*if(gCfgItems.display_style == 2)
+				if(temperature_change_frequency)
+				{
+					temperature_change_frequency = 0;
+					disp_ext_main_temp();
+					disp_bed_main_temp();
+				}
+
+				/* if(gCfgItems.display_style == 2)
 				{
 					if(temperature_change_frequency){
 						temperature_change_frequency=0;

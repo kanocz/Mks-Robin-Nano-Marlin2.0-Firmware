@@ -15,6 +15,8 @@ extern void disp_Limit_error();
 extern void disp_det_error();
 extern void disp_det_ok();
 extern void lv_clear_ready_print();
+extern void disp_ext_main_temp();
+extern void disp_bed_main_temp();
 
 
 //extern void disp_temp_ready_print();

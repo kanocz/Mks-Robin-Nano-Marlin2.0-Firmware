@@ -21,9 +21,15 @@ static lv_obj_t * scr;
 uint8_t curent_disp_ui = 0;
 #endif
 
+static lv_obj_t * labelExt1,* labelExt2;
+#if HAS_HEATED_BED
+static lv_obj_t* labelBed;
+#endif
+
 #define ID_TOOL		1
 #define ID_SET		2
 #define ID_PRINT		3
+#define ID_TEMP		4
 
 static void event_handler(lv_obj_t * obj, lv_event_t event)
 {
@@ -57,6 +63,15 @@ static void event_handler(lv_obj_t * obj, lv_event_t event)
 	       else if(event == LV_EVENT_RELEASED) {
 			lv_obj_del(scr);
 	        	lv_draw_print_file();
+	       }
+		break;
+	case ID_TEMP:
+		if(event == LV_EVENT_CLICKED) {
+			
+	       }
+	       else if(event == LV_EVENT_RELEASED) {
+			lv_obj_del(scr);
+	        	lv_draw_preHeat();
 	       }
 		break;
 
@@ -221,7 +236,13 @@ void lv_draw_ready_print(void)
 
 	#else
 	lv_obj_t *buttonPrint,*buttonTool,*buttonSet;
-	
+
+	lv_obj_t *imgExt1,*imgExt2;
+	#if HAS_HEATED_BED
+	lv_obj_t *imgBedstate;
+	#endif
+
+
 	disp_state_stack._disp_index = 0;
 	memset(disp_state_stack._disp_state, 0, sizeof(disp_state_stack._disp_state));
 	disp_state_stack._disp_state[disp_state_stack._disp_index] = PRINT_READY_UI;
@@ -237,6 +258,7 @@ void lv_draw_ready_print(void)
   	lv_refr_now(lv_refr_get_disp_refreshing());
 	
 	LV_IMG_DECLARE(bmp_pic);
+	LV_IMG_DECLARE(bmp_pic_45x45);
 
 	//lv_obj_t * title = lv_label_create(scr, NULL);
 	//lv_obj_set_style(title, &tft_style_lable_rel);
@@ -283,7 +305,7 @@ void lv_draw_ready_print(void)
 	lv_btn_set_layout(buttonPrint, LV_LAYOUT_OFF);
 	lv_btn_set_layout(buttonSet, LV_LAYOUT_OFF);
 	lv_btn_set_layout(buttonTool, LV_LAYOUT_OFF);
-	
+ 
     lv_obj_t * label_print = lv_label_create(buttonPrint, NULL);
 	lv_obj_t * label_set = lv_label_create(buttonSet, NULL);
 	lv_obj_t * label_tool = lv_label_create(buttonTool, NULL);
@@ -301,7 +323,92 @@ void lv_draw_ready_print(void)
 		lv_label_set_text(label_tool, main_menu.tool);
 		lv_obj_align(label_tool, buttonTool, LV_ALIGN_IN_BOTTOM_MID,0, BUTTON_TEXT_Y_OFFSET);
 	}
-       
+
+	// LV_IMG_DECLARE(bmp_pic_45x45);
+    imgExt1 = lv_imgbtn_create(scr, NULL);
+	if(EXTRUDERS == 2)
+		imgExt2 = lv_imgbtn_create(scr, NULL);
+	#if HAS_HEATED_BED
+	imgBedstate = lv_imgbtn_create(scr, NULL);
+	#endif
+
+	lv_obj_set_event_cb_mks(imgExt1, event_handler,ID_TEMP,"bmp_Ext1_state.bin",0);
+	lv_imgbtn_set_src(imgExt1, LV_BTN_STATE_REL, &bmp_pic_45x45);
+	lv_imgbtn_set_src(imgExt1, LV_BTN_STATE_PR, &bmp_pic_45x45);
+	lv_imgbtn_set_style(imgExt1, LV_BTN_STATE_PR, &tft_style_lable_pre);
+	lv_imgbtn_set_style(imgExt1, LV_BTN_STATE_REL, &tft_style_lable_rel);
+
+	if(EXTRUDERS == 2) {
+	  lv_obj_set_event_cb_mks(imgExt2, event_handler,ID_TEMP,"bmp_Ext2_state.bin",0);
+	  lv_imgbtn_set_src(imgExt2, LV_BTN_STATE_REL, &bmp_pic_45x45);
+	  lv_imgbtn_set_src(imgExt2, LV_BTN_STATE_PR, &bmp_pic_45x45);
+	  lv_imgbtn_set_style(imgExt2, LV_BTN_STATE_PR, &tft_style_lable_pre);
+	  lv_imgbtn_set_style(imgExt2, LV_BTN_STATE_REL, &tft_style_lable_rel);
+	}
+
+	#if HAS_HEATED_BED
+	  lv_obj_set_event_cb_mks(imgBedstate, event_handler,ID_TEMP,"bmp_Bed_state.bin",0);
+	  lv_imgbtn_set_src(imgBedstate, LV_BTN_STATE_REL, &bmp_pic_45x45);
+	  lv_imgbtn_set_src(imgBedstate, LV_BTN_STATE_PR, &bmp_pic_45x45);
+	  lv_imgbtn_set_style(imgBedstate, LV_BTN_STATE_PR, &tft_style_lable_pre);
+	  lv_imgbtn_set_style(imgBedstate, LV_BTN_STATE_REL, &tft_style_lable_rel);
+    #endif
+
+	lv_obj_set_pos(imgExt1,20,10);
+	if(EXTRUDERS == 2)
+		lv_obj_set_pos(imgExt2,170,10);
+	#if HAS_HEATED_BED
+	lv_obj_set_pos(imgBedstate,340,10);
+	#endif
+
+	lv_btn_set_layout(imgExt1, LV_LAYOUT_OFF);
+	if(EXTRUDERS == 2)
+		lv_btn_set_layout(imgExt2, LV_LAYOUT_OFF);
+	#if HAS_HEATED_BED
+	lv_btn_set_layout(imgBedstate, LV_LAYOUT_OFF);
+	#endif
+
+   	labelExt1 = lv_label_create(scr, NULL);
+	lv_obj_set_style(labelExt1, &tft_style_lable_rel);
+	lv_obj_set_pos(labelExt1,20+45,20);
+	if(EXTRUDERS == 2)
+	{
+		labelExt2 = lv_label_create(scr, NULL);
+		lv_obj_set_style(labelExt2, &tft_style_lable_rel);
+		lv_obj_set_pos(labelExt2,170+45,20);
+	}
+	#if HAS_HEATED_BED
+	labelBed = lv_label_create(scr, NULL);
+	lv_obj_set_style(labelBed, &tft_style_lable_rel);
+	lv_obj_set_pos(labelBed,340+45,20);
+	#endif
+
+	disp_ext_main_temp();
+	disp_bed_main_temp();
+
+	#endif
+}
+
+void disp_ext_main_temp()
+{
+	memset(public_buf_l, 0, sizeof(public_buf_l));
+	sprintf(public_buf_l, "%d / %d", (int)thermalManager.temp_hotend[0].celsius, (int)thermalManager.temp_hotend[0].target);
+	lv_label_set_text(labelExt1, public_buf_l);
+
+	if(EXTRUDERS == 2)
+	{
+		memset(public_buf_l, 0, sizeof(public_buf_l));
+		sprintf(public_buf_l, "%d / %d", (int)thermalManager.temp_hotend[1].celsius, (int)thermalManager.temp_hotend[1].target);
+		lv_label_set_text(labelExt2, public_buf_l);
+	}
+}
+
+void disp_bed_main_temp()
+{
+	#if HAS_HEATED_BED
+	memset(public_buf_l,0,sizeof(public_buf_l));
+	sprintf(public_buf_l,printing_menu.bed_temp,(int)thermalManager.temp_bed.celsius,(int)thermalManager.temp_bed.target);
+	lv_label_set_text(labelBed, public_buf_l);
 	#endif
 }
 
