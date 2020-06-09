@@ -60,6 +60,7 @@
 
 #ifndef FIL_RUNOUT_PIN
   #define FIL_RUNOUT_PIN                    PA4   // MT_DET
+  #define FIL_RUNOUT2_PIN                   PE6   // MT_DET
 #endif
 
 //
